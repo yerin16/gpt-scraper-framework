@@ -3,12 +3,11 @@
 # And generates JSONS of them
 import requests
 import config
-
 from pick import pick
-
 import scraperutils
 from scrapers.pluginsurfscraper import PluginSurfScraper
 from scrapers.topgptsscraper import TopGPTsScraper
+import json
 
 
 def fetch_openai_gizmo(openai_url):
@@ -122,6 +121,14 @@ def main():
 
     # At the end of it all, log the failures and which domains caused them
     print(f"{scraperutils.bcolors.WARNING}Failures = ", failure_tracker)
+
+    # Let's tag all the gizmos with
+
+    # pickle the referrer lookup table
+    print(f"{scraperutils.bcolors}")
+
+    with open("href_values.json", "w") as outfile:
+        json.dump(gizmo_list, outfile)
 
 
 def exit():
