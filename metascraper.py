@@ -5,7 +5,9 @@ import requests
 import config
 from pick import pick
 import scraperutils
+from scrapers.allgptsscraper import AllGPTSScraper
 from scrapers.pluginsurfscraper import PluginSurfScraper
+from scrapers.tinytopgpts import TinyTopGPTS
 from scrapers.topgptsscraper import TopGPTsScraper
 import json
 
@@ -59,11 +61,15 @@ def decode_scrapers(name):
             return TopGPTsScraper()
         case "plugin.surf":
             return PluginSurfScraper()
+        case "topgpts.ai-tiny":
+            return TinyTopGPTS()
+        case "allgpts.co":
+            return AllGPTSScraper()
         case _:
             raise ValueError(f"Unknown scraper name/Not implemented: {name}")
 def main():
     title = 'Select scrapers to run: '
-    options = ['topgpts.ai', 'plugin.surf', 'Twitter']
+    options = ['topgpts.ai', 'plugin.surf', 'topgpts.ai-tiny', "allgpts.co", 'Twitter']
     selected = pick(options, title, multiselect=True, min_selection_count=1)
     failure_tracker = {}
 
@@ -122,10 +128,14 @@ def main():
     # At the end of it all, log the failures and which domains caused them
     print(f"{scraperutils.bcolors.WARNING}Failures = ", failure_tracker)
 
-    # Let's tag all the gizmos with
+    print(referrer_lookup_table)
 
-    # pickle the referrer lookup table
-    print(f"{scraperutils.bcolors}")
+    # Let's tag all the gizmos with a referrer array
+    for gizmo_index in range(len(gizmo_list)):
+        gizmo_id = gizmo_list[gizmo_index]["gizmo"]["id"]
+        gizmo_list[gizmo_index]["source"] = referrer_lookup_table[
+            scraperutils.convert_short_code_to_openai_url(gizmo_id)]
+
 
     with open("href_values.json", "w") as outfile:
         json.dump(gizmo_list, outfile)

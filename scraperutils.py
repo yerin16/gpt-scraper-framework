@@ -9,6 +9,7 @@ import config
 import smtplib
 from selenium import webdriver
 import traceback
+import re
 
 human_request_header = {
             "accept": "*/*",
@@ -51,6 +52,29 @@ def scroll_to_bottom(driver):
 def is_at_bottom(driver):
     # Check if the page is at the bottom
     return driver.execute_script("var scrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop; var totalHeight = document.documentElement.scrollHeight;var visibleHeight = window.innerHeight;return scrollPosition + visibleHeight >= totalHeight - 10;")
+
+def convert_openai_url_to_shortcode(openai_url):
+    '''when given an openai url containing a gpt, convert it'''
+
+    index_where_chat_starts = openai_url.find("chat.openai.com/g/g-")
+
+    if index_where_chat_starts == -1:
+        raise ValueError("Invalid openai url")
+
+    # otherwise, we know where the
+    index_where_code_starts = index_where_chat_starts+18
+    length_of_shortcode = 10
+    index_where_code_ends = index_where_code_starts + length_of_shortcode
+
+    print(index_where_code_starts, length_of_shortcode)
+
+    return openai_url[index_where_code_starts:index_where_code_ends]
+
+def convert_short_code_to_openai_url(short_code):
+    return "https://chat.openai.com/g/" + short_code + "-"
+
+
+
 
 
 # Selenium Startup Code
@@ -128,3 +152,27 @@ def send_email(subject, body, to):
     server.quit()
     print("Email sent to " + to)
     return True
+
+
+def bulk_extract_openai_url(main_page_dump):
+    '''
+    Extracts OpenAI URLs given a page dump that contains urls that start with chat.openai.com
+    :param main_page_dump:
+    :return:
+    '''
+    urls = []
+    url_pattern = r"chat\.openai\.com/g/g-\w+"
+
+    for match in re.finditer(url_pattern, main_page_dump):
+        url_start = match.start()
+        extracted_url = "https://" + main_page_dump[url_start:url_start + 30]
+        urls.append(extracted_url)
+
+    if not urls:
+        print(f"{bcolors.WARNING}Failure to locate any URLs {bcolors.ENDC}")
+        return None
+    else:
+        for url in urls:
+            print(f"{bcolors.OKGREEN} {url} {bcolors.ENDC}")
+
+    return urls
