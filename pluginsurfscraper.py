@@ -1,22 +1,10 @@
-# pluginscraper.py - Python script in Selenium to Scrape ChatGPT for plugins on the app store
-# Author: Evin Jaff
 
-# Inspired by GPT-1984 (https://github.com/0ut0flin3/GPT-1984)
 import sys
 import time
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-# Import chromedriver
-from selenium.webdriver.chrome.options import Options
-import pickle
 
 import traceback
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
-from datetime import datetime
+
 import os
 import sys
 import time
@@ -26,6 +14,9 @@ import argparse
 import requests
 import sys
 import config
+import scraperutils
+from scraperutils import send_email
+from scraperutils import bcolors
 
 parser = argparse.ArgumentParser(description="Crawl ChatGPT Plugin Store")
 group = parser.add_mutually_exclusive_group()
@@ -39,75 +30,18 @@ group2.add_argument("--existing-href", action="store_true")
 # Group 3 is an override for the default behavior of using requests to get the openai urls
 group3.add_argument("--use-selenium-for-openai-urls", action="store_true")
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-def send_email(subject, body, to):
-    msg = MIMEMultipart()
-    msg['From'] = "evinjaffyt@gmail.com"
-    msg['To'] = to
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-    text = msg.as_string()
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(config.EMAIL_ADDRESS, config.EMAIL_SMTP_PASSWORD)
-    # server.sendmail("evinjaffyt@gmail.com", to, text)
-    server.quit()
-    print("Email sent to " + to)
-    return True
-
+### Global Variables
+args = None
 driver = None
-
-def start_webdriver():
-	global driver
-	success = False
-	for i in range(1, 10):
-		try:
-			driver = webdriver.Chrome()
-			success = True
-			break
-		except Exception:
-			traceback.print_exc()
-			# if keyboard interrupt, exit
-		if sys.exc_info()[0] == KeyboardInterrupt:
-			sys.exit(1)
-		
-		print("Failed to start driver, trying again")
-		time.sleep(1)
-		continue
-
-	if not success:
-		print("Failed to start driver after 10 attempts")
-		send_email("Error Occured Scraping Plugins", "Failed to start driver after 10 attempts", config.EMAIL_TO_SEND_ERROR_REPORT)
-		sys.exit(1)
-
-def scroll_to_bottom(driver):
-    # Scroll to the bottom of the page
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(1)  # Wait for 1 second
-
-def is_at_bottom(driver):
-    # Check if the page is at the bottom
-    return driver.execute_script("var scrollPosition = window.scrollY || window.pageYOffset || document.documentElement.scrollTop; var totalHeight = document.documentElement.scrollHeight;var visibleHeight = window.innerHeight;return scrollPosition + visibleHeight >= totalHeight - 10;")
-
-
 
 def scrape_plugin_surf():
     driver.get('https://plugin.surf')
     # Feedback loop to scroll to the bottom
     try:
         while True:
-            scroll_to_bottom(driver)
+            scraperutils.scroll_to_bottom(driver)
             time.sleep(2)
-            if is_at_bottom(driver):
+            if scraperutils.is_at_bottom(driver):
                 # If at the bottom, you can break out of the loop or perform additional actions
                 break
     except KeyboardInterrupt:
@@ -297,7 +231,9 @@ def fetch_gizmos_from_href_file(filename):
 
         return (gizmo_dict, fail_logger)
 
-if __name__ == "__main__":
+def main():
+    global driver
+    global args
     args = parser.parse_args()
     
     if args.existing_href:
@@ -305,7 +241,7 @@ if __name__ == "__main__":
         fetch_gizmos_from_href_file("href_values.json")
         sys.exit(1)
 
-    start_webdriver()
+    driver = scraperutils.start_webdriver()
     if args.unattended:
         print("Running Unattended version")
     try:
@@ -314,3 +250,6 @@ if __name__ == "__main__":
         print(traceback.format_exc())
         send_email("Error Occured Scraping General Exception", traceback.format_exc(), config.EMAIL_TO_SEND_ERROR_REPORT)
     driver.quit()
+
+if __name__ == "__main__":
+    main()
