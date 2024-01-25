@@ -116,7 +116,7 @@ class bcolors:
 
 def send_email(subject, body, to):
     msg = MIMEMultipart()
-    msg['From'] = "evinjaffyt@gmail.com"
+    msg['From'] = config.EMAIL_ADDRESS
     msg['To'] = to
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
@@ -124,7 +124,7 @@ def send_email(subject, body, to):
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(config.EMAIL_ADDRESS, config.EMAIL_SMTP_PASSWORD)
-    server.sendmail("evinjaffyt@gmail.com", to, text)
+    server.sendmail(config.EMAIL_ADDRESS, to, text)
     server.quit()
     print("Email sent to " + to)
     return True
