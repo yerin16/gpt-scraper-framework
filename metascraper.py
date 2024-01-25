@@ -1,16 +1,14 @@
 # metascraper.py - Call the other scrapers to grab OpenAI URLs
 # This script puts it all together- takes the universal interface of OpenAI URLS, calls OpenAI
 # And generates JSONS of them
-import argparse
-import json
 import requests
 import config
 
 from pick import pick
 
 import scraperutils
-from pluginsurfscraper import PluginSurfScraper
-from topgptsscraper import TopGPTsScraper
+from scrapers.pluginsurfscraper import PluginSurfScraper
+from scrapers.topgptsscraper import TopGPTsScraper
 
 
 def fetch_openai_gizmo(openai_url):
