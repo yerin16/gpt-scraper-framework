@@ -130,14 +130,20 @@ def main():
 
     print(referrer_lookup_table)
 
+    with open("gizmos_noref.json", "w") as outfile:
+        json.dump(gizmo_list, outfile)
+
     # Let's tag all the gizmos with a referrer array
     for gizmo_index in range(len(gizmo_list)):
         gizmo_id = gizmo_list[gizmo_index]["gizmo"]["id"]
-        gizmo_list[gizmo_index]["source"] = referrer_lookup_table[
-            scraperutils.convert_short_code_to_openai_url(gizmo_id)]
+        shortcode = scraperutils.convert_short_code_to_openai_url(gizmo_id)
 
+        if shortcode in referrer_lookup_table.keys():
+            gizmo_list[gizmo_index]["source"] = referrer_lookup_table[shortcode]
+        else:
+            gizmo_list[gizmo_index]["source"] = ["unknown"]
 
-    with open("href_values.json", "w") as outfile:
+    with open("gizmos_ref.json", "w") as outfile:
         json.dump(gizmo_list, outfile)
 
 
