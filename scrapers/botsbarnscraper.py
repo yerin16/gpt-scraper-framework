@@ -19,33 +19,24 @@ from scraperutils import send_email
 from scraperutils import bcolors
 
 
-class AllGPTSScraper:
+class BotsBarnScraper:
     ### Global Variables
     args = None
     driver = None
-    ID = "allgptsscraper"
+    ID = "botsbarnscraper"
 
-    BACKUP_HREF_FILE_NAME = "../all_gpts_href_values_bak.json"
-    BACKUP_OPENAI_URLS_FILE_NAME = "../all_gpts_openai_urls_bak.json"
+    BACKUP_HREF_FILE_NAME = "../{}_href_values_bak.json".format(ID)
+    BACKUP_OPENAI_URLS_FILE_NAME = "../{}_openai_urls_bak.json".format(ID)
 
     def scrape_all_gpts(self):
         '''
         Gets a list of subpages from plugin.surf that may contain openAI urls
         :return:
         '''
-        self.driver.get('https://allgpts.co/')
-
-        Popup_button_xs = self.driver.find_element(By.ID, "closePopup")
-
-        Popup_button_xs.click()
+        self.driver.get('https://botsbarn.com/')
 
         time.sleep(1)
-
-        # Show all GPTs
-        self.driver.execute_script('showAll();this.hidden=true')
-
         dumped_html_string = self.driver.page_source
-
         return dumped_html_string
 
     def scrape(self, email_reporting=False) -> list:
@@ -59,7 +50,6 @@ class AllGPTSScraper:
         :return: List of strings that should be valid URLs
         '''
         self.driver = scraperutils.start_webdriver()
-        # Run selenium to grab supages urls
         main_page_dump = self.scrape_all_gpts()
         self.driver.quit()
 

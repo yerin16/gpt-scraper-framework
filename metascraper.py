@@ -6,6 +6,7 @@ import config
 from pick import pick
 import scraperutils
 from scrapers.allgptsscraper import AllGPTSScraper
+from scrapers.botsbarnscraper import BotsBarnScraper
 from scrapers.pluginsurfscraper import PluginSurfScraper
 from scrapers.tinytopgpts import TinyTopGPTS
 from scrapers.topgptsscraper import TopGPTsScraper
@@ -65,11 +66,13 @@ def decode_scrapers(name):
             return TinyTopGPTS()
         case "allgpts.co":
             return AllGPTSScraper()
+        case "botsbarn.com":
+            return BotsBarnScraper()
         case _:
             raise ValueError(f"Unknown scraper name/Not implemented: {name}")
 def main():
     title = 'Select scrapers to run: '
-    options = ['topgpts.ai', 'plugin.surf', 'topgpts.ai-tiny', "allgpts.co", 'Twitter']
+    options = ['topgpts.ai', 'plugin.surf', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", 'Twitter']
     selected = pick(options, title, multiselect=True, min_selection_count=1)
     failure_tracker = {}
 
