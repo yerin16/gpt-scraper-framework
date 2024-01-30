@@ -40,11 +40,11 @@ class AssistantHuntScraper:
         time.sleep(1)
         dumped_html_string = self.driver.page_source
         urls = []
-        url_pattern = r"assistanthunt\.com\/category\/\w+"
+        url_pattern = r"\/category\/\w+"
 
         for match in re.finditer(url_pattern, dumped_html_string):
-            url_start = match.start()
-            extracted_url = "https://" + dumped_html_string[url_start:url_start + 30]
+            path = match.string
+            extracted_url = "https://assistanthunt.com/" + path
             urls.append(extracted_url)
 
         if not urls:
