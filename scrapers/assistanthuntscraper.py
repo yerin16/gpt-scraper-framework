@@ -72,11 +72,18 @@ class AssistantHuntScraper:
         category_subpages = self.get_category_page_urls()
         print(category_subpages)
 
+        urls = []
         for url in category_subpages:
             raw_page_dump = self.dump_raw_html_from_url(url)
-            scraperutils.bulk_extract_openai_url(raw_page_dump)
+            urls.append(scraperutils.bulk_extract_openai_url(raw_page_dump))
 
-        raise ValueError()
+        flat_list = []
+        for row in urls:
+            flat_list.extend(row)
+
+        return flat_list
+
+
 
 
 
