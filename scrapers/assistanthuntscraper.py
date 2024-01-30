@@ -36,6 +36,7 @@ class AssistantHuntScraper:
 
 
     def get_category_page_urls(self):
+        self.driver.get("https://assistanthunt.com/category")
         time.sleep(1)
         dumped_html_string = self.driver.page_source
         urls = []
