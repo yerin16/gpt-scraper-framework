@@ -43,8 +43,9 @@ class AssistantHuntScraper:
         url_pattern = r"\/category\/\w+"
 
         for match in re.finditer(url_pattern, dumped_html_string):
-            path = match.string
-            extracted_url = "https://assistanthunt.com/" + path
+            s = match.start()
+            e = match.end()
+            extracted_url = "https://assistanthunt.com/" + dumped_html_string[s:e]
             urls.append(extracted_url)
 
         if not urls:
