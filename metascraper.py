@@ -89,7 +89,7 @@ def main():
 
     if not args.use_json:
         title = 'Select scrapers to run: '
-        options = ['plugin.surf', 'topgpts.ai', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", "assistanthunt.com", "GitHub - GPTsSearch CSV Scrape", 'Twitter']
+        options = ['plugin.surf', "GitHub - GPTsSearch CSV Scrape", 'topgpts.ai', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", "assistanthunt.com", 'Twitter']
         selected = pick(options, title, multiselect=True, min_selection_count=1)
         for i in range(len(selected)):
             selected[i] = selected[i][0]
