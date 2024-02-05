@@ -1,6 +1,8 @@
 # metascraper.py - Call the other scrapers to grab OpenAI URLs
 # This script puts it all together- takes the universal interface of OpenAI URLS, calls OpenAI
 # And generates JSONS of them
+import argparse
+
 import requests
 import config
 from pick import pick
@@ -11,8 +13,16 @@ from scrapers.botsbarnscraper import BotsBarnScraper
 from scrapers.pluginsurfscraper import PluginSurfScraper
 from scrapers.tinytopgpts import TinyTopGPTS
 from scrapers.topgptsscraper import TopGPTsScraper
+from scrapers.githubgptssearchscraper import GitHubGPTsSearchScraper
 import json
 
+parser = argparse.ArgumentParser(
+                    prog='ProgramName',
+                    description='What the program does',
+                    epilog='Text at the bottom of help')
+
+parser.add_argument('-j', '--use-json', action='store_true')
+args = parser.parse_args()
 
 def fetch_openai_gizmo(openai_url):
     # Start by sanitizing the url, it should start with https://chat.openai.com/g/g-
@@ -71,23 +81,37 @@ def decode_scrapers(name):
             return BotsBarnScraper()
         case "assistanthunt.com":
             return AssistantHuntScraper()
+        case "GitHub - GPTsSearch CSV Scrape":
+            return GitHubGPTsSearchScraper()
         case _:
             raise ValueError(f"Unknown scraper name/Not implemented: {name}")
 def main():
-    title = 'Select scrapers to run: '
-    options = ['plugin.surf', 'topgpts.ai', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", "assistanthunt.com", 'Twitter']
-    selected = pick(options, title, multiselect=True, min_selection_count=1)
+
+    if not args.use_json:
+        title = 'Select scrapers to run: '
+        options = ['plugin.surf', 'topgpts.ai', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", "assistanthunt.com", "GitHub - GPTsSearch CSV Scrape", 'Twitter']
+        selected = pick(options, title, multiselect=True, min_selection_count=1)
+        for i in range(len(selected)):
+            selected[i] = selected[i][0]
+    else:
+        print(f'{scraperutils.bcolors.OKCYAN}Using preconfigured config.json{scraperutils.bcolors.ENDC}')
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            selected = config['scrapers']
+            print(f'{scraperutils.bcolors.OKCYAN}Using scrapers {selected}{scraperutils.bcolors.ENDC}')
+
+
     failure_tracker = {}
 
     selected_strings = "Running with "
     for i in selected:
-        selected_strings = selected_strings +  i[0] + ", "
+        selected_strings = selected_strings + i + ", "
 
     print(f"{scraperutils.bcolors.OKCYAN}{selected_strings}{scraperutils.bcolors.ENDC}")
 
     scrapers = []
     for selection in selected:
-        scrapers.append(decode_scrapers(selection[0]))
+        scrapers.append(decode_scrapers(selection))
 
     scraper_data = []
     for scraper in scrapers:
@@ -106,6 +130,14 @@ def main():
 
     # compose the urls into referral banks
     referrer_lookup_table = {}
+
+    #Status indicator code
+    total_urls = 0
+    for scraper in scraper_data:
+        total_urls += len(scraper["openai_urls"])
+
+
+    print(f"{scraperutils.bcolors.OKGREEN}Total URLs: {total_urls}{scraperutils.bcolors.ENDC}")
 
     gizmo_list = []
     for scraper in scraper_data:
