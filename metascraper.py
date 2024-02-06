@@ -2,6 +2,8 @@
 # This script puts it all together- takes the universal interface of OpenAI URLS, calls OpenAI
 # And generates JSONS of them
 import argparse
+import time
+import traceback
 
 import requests
 import config
@@ -51,22 +53,29 @@ def fetch_openai_gizmo(openai_url):
 
     full_request_url = "https://chat.openai.com/backend-api/gizmos/g" + gizmo_id
 
-    gizmo_request = requests.get(full_request_url, headers=headers)
-
-    successful_request = True
-    if gizmo_request.status_code != 200:
-        # raise ValueError("Error Fetching Gizmo JSON @ URL " + full_request_url +  " Status Code: " + str(gizmo_request.status_code) + " " + gizmo_request.text)
-        return None, False, "http_code " + str(gizmo_request.status_code)
-
-    gizmo_json = None
+    # wrap this in a try since sometimes urllib can error
     try:
-        gizmo_json = gizmo_request.json()
+        gizmo_request = requests.get(full_request_url, headers=headers)
+
+        successful_request = True
+        if gizmo_request.status_code != 200:
+            # raise ValueError("Error Fetching Gizmo JSON @ URL " + full_request_url +  " Status Code: " + str(gizmo_request.status_code) + " " + gizmo_request.text)
+            return None, False, "http_code " + str(gizmo_request.status_code)
+
+        gizmo_json = None
+        try:
+            gizmo_json = gizmo_request.json()
+        except:
+            print("Error Fetching Gizmo JSON @ URL " + full_request_url + " Status Code: " + str(gizmo_request.status_code))
+            return (gizmo_json, False, "invalid_json")
+
+        return (gizmo_json, successful_request, "none")
+
     except:
-        print("Error Fetching Gizmo JSON @ URL " + full_request_url + " Status Code: " + str(gizmo_request.status_code))
-        return (gizmo_json, False, "invalid_json")
-
-    return (gizmo_json, successful_request, "none")
-
+        print(f"{scraperutils.bcolors.FAIL}[!] Critical URLLIB Error:\n{traceback.format_exc()}\nInvoking Mandatory Timeout of 10 minutes{scraperutils.bcolors.ENDC}")
+        # Timeout for 6 minutes in case it's the server getting mad at us
+        time.sleep(600)
+        return (None, False, "urllib error")
 def decode_scrapers(name):
     match name:
         case "topgpts.ai":
@@ -100,7 +109,7 @@ def main():
             selected = config['scrapers']
             print(f'{scraperutils.bcolors.OKCYAN}Using scrapers {selected}{scraperutils.bcolors.ENDC}')
 
-
+    retry_dict = {}
     failure_tracker = {}
 
     selected_strings = "Running with "
@@ -143,34 +152,38 @@ def main():
     for scraper in scraper_data:
         source = scraper["id"]
         for openai_url in scraper["openai_urls"]:
-            # Take the gizmo and fetch OpenAI data
-            gizmo, status, reason = fetch_openai_gizmo(openai_url)
-
-            if status == False:
-                print(f"{scraperutils.bcolors.WARNING}Error: {reason}{scraperutils.bcolors.ENDC}")
-                if reason not in failure_tracker[source].keys():
-                    failure_tracker[source][reason] = 1
-                else:
-                    failure_tracker[source][reason] += 1
-                continue
 
             # Case for if the gizmo appears in another scrape, we will not append it, but we will keep a log of it
             if openai_url in referrer_lookup_table.keys():
                 print(f"{scraperutils.bcolors.OKCYAN}Duplicate OpenAI URL: {openai_url}")
                 referrer_lookup_table[openai_url].append(source)
             else:
-                referrer_lookup_table[openai_url] = [source]
-                gizmo_list.append(gizmo)
+                # Take the gizmo and fetch OpenAI data
+                gizmo, status, reason = fetch_openai_gizmo(openai_url)
+
+                if status == False:
+                    print(f"{scraperutils.bcolors.WARNING}Error: {reason}{scraperutils.bcolors.ENDC}")
+                    # For replay reasons, we will store this in a dictionary
+                    retry_dict[openai_url] = reason
+                    # Log the failure for system-level reasons
+                    if reason not in failure_tracker[source].keys():
+                        failure_tracker[source][reason] = 1
+                    else:
+                        failure_tracker[source][reason] += 1
+                    continue
+
+
 
 
 
     # At the end of it all, log the failures and which domains caused them
     print(f"{scraperutils.bcolors.WARNING}Failures = ", failure_tracker)
 
-    print(referrer_lookup_table)
-
     with open("gizmos_noref.json", "w") as outfile:
         json.dump(gizmo_list, outfile)
+
+    with open("replay_file.json", "w") as outfile:
+        json.dump(retry_dict, outfile)
 
     # Let's tag all the gizmos with a referrer array
     for gizmo_index in range(len(gizmo_list)):
