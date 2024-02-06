@@ -147,6 +147,7 @@ def main():
             gizmo, status, reason = fetch_openai_gizmo(openai_url)
 
             if status == False:
+                print(f"{scraperutils.bcolors.WARNING}Error: {reason}{scraperutils.bcolors.ENDC}")
                 if reason not in failure_tracker[source].keys():
                     failure_tracker[source][reason] = 1
                 else:
