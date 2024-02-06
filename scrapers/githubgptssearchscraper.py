@@ -39,7 +39,6 @@ class GitHubGPTsSearchScraper:
             # iteratively try finding the gpt_id column
             for i in range(0, 20):
                 try:
-                    od.pwd()
                     csv_columns = pd.read_csv(os.getcwd() + "/gpt-data" + "/{}".format(csv),
                                               skiprows=7)
                     if "gpt_id" in csv_columns.columns.values:
