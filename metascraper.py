@@ -94,6 +94,18 @@ def decode_scrapers(name):
             return GitHubGPTsSearchScraper()
         case _:
             raise ValueError(f"Unknown scraper name/Not implemented: {name}")
+
+def dump_urls_to_file(filename, scraper_data):
+    with open(filename, "w") as f:
+        urls = []
+        for scraper in scraper_data:
+            for openai_url in scraper["openai_urls"]:
+                urls.append(openai_url)
+
+        urls = list(set(urls))
+        json.dump(urls, f, indent=4)
+
+
 def main():
 
     if not args.use_json:
@@ -147,6 +159,14 @@ def main():
 
 
     print(f"{scraperutils.bcolors.OKGREEN}Total URLs: {total_urls}{scraperutils.bcolors.ENDC}")
+
+    print(f"{scraperutils.bcolors.OKGREEN}Dumping URLs as fallback_urls.json{scraperutils.bcolors.ENDC}")
+
+    # Early dump
+    try:
+        dump_urls_to_file("fallback_urls.json", scraper_data)
+    except:
+        print(f"{scraperutils.bcolors.FAIL}failure dumping file{scraperutils.bcolors.ENDC}")
 
     gizmo_list = []
     for scraper in scraper_data:
