@@ -180,6 +180,8 @@ def main():
             else:
                 # Take the gizmo and fetch OpenAI data
                 gizmo, status, reason = fetch_openai_gizmo(openai_url)
+                referrer_lookup_table[openai_url] = [source]
+                gizmo_list.append(gizmo)
 
                 if status == False:
                     print(f"{scraperutils.bcolors.WARNING}Error: {reason}{scraperutils.bcolors.ENDC}")
