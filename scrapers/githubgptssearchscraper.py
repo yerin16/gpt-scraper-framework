@@ -12,7 +12,7 @@ class GitHubGPTsSearchScraper:
     args = None
     driver = None
     ID = "github_gpts_searchscraper"
-    skip = True
+    skip = False
 
     relevant_github_repo = "https://github.com/casssapir/gpt-list.git"
     repo_dir = "gpt-data"
