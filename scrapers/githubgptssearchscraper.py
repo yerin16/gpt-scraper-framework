@@ -12,6 +12,7 @@ class GitHubGPTsSearchScraper:
     args = None
     driver = None
     ID = "github_gpts_searchscraper"
+    skip = True
 
     relevant_github_repo = "https://github.com/casssapir/gpt-list.git"
     repo_dir = "gpt-data"
@@ -40,7 +41,7 @@ class GitHubGPTsSearchScraper:
             for i in range(0, 20):
                 try:
                     csv_columns = pd.read_csv(os.getcwd() + "/gpt-data" + "/{}".format(csv),
-                                              skiprows=7)
+                                              skiprows=i)
                     if "gpt_id" in csv_columns.columns.values:
                         openai_ids.append(csv_columns)
                         break
@@ -67,8 +68,11 @@ class GitHubGPTsSearchScraper:
         pass
 
     def scrape(self, email_reporting=False) -> list:
-        repo_path = self.clone_repo()
+        if not self.skip:
+            repo_path = self.clone_repo()
+        else:
+            repo_path = "/Users/evinjaff/github/gptsdatamining/gpt-data"
         shortcodes = self.extract_and_read_csvs(repo_path)
         # append https://chat.openai.com/g/g- to all strings in shortcodes
 
-        return ["https://chat.openai.com/g/g-" + s for s in shortcodes]
+        return ["https://chat.openai.com/g/g-" + s + "-" for s in shortcodes]

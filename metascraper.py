@@ -52,6 +52,7 @@ def fetch_openai_gizmo(openai_url):
     }
 
     full_request_url = "https://chat.openai.com/backend-api/gizmos/g" + gizmo_id
+    print(full_request_url)
 
     # wrap this in a try since sometimes urllib can error
     try:
@@ -155,6 +156,8 @@ def main():
     #Status indicator code
     total_urls = 0
     for scraper in scraper_data:
+        if scraper["scraper"] is None:
+            scraper["openai_urls"] = []
         total_urls += len(scraper["openai_urls"])
 
 
