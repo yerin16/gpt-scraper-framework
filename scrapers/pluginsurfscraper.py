@@ -51,6 +51,9 @@ class PluginSurfScraper:
             while True:
                 scraperutils.scroll_to_bottom(self.driver)
                 time.sleep(3)
+                scraperutils.scroll_jiggle(self.driver)
+                time.sleep(3)
+                scraperutils.scroll_to_bottom(self.driver)
                 if scraperutils.is_at_bottom(self.driver):
                     # If at the bottom, you can break out of the loop or perform additional actions
                     break

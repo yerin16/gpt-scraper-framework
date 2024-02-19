@@ -4,6 +4,7 @@ import sys
 import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import random
 import requests
 import config
 import smtplib
@@ -48,6 +49,22 @@ def extract_openai_url(openai_url):
 def scroll_to_bottom(driver):
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(1)  # Wait for 1 second
+
+def scroll_jiggle(driver):
+    iter_amount = random.randrange(4,13)
+
+    for i in range(iter_amount):
+
+        up_down = random.random()
+        amt = random.randrange(100,500)
+        direction = random.random() - .5
+
+        commmand = "window.scrollBy(0,{});".format(int(amt*direction))
+        driver.execute_script(commmand)
+
+        delay = abs(random.random())
+
+        time.sleep(delay)
 
 def is_at_bottom(driver):
     # Check if the page is at the bottom
