@@ -16,6 +16,7 @@ from scrapers.pluginsurfscraper import PluginSurfScraper
 from scrapers.tinytopgpts import TinyTopGPTS
 from scrapers.topgptsscraper import TopGPTsScraper
 from scrapers.githubgptssearchscraper import GitHubGPTsSearchScraper
+from scrapers.meetgptsscraper import MeetGPTsScraper
 import json
 
 parser = argparse.ArgumentParser(
@@ -93,6 +94,8 @@ def decode_scrapers(name):
             return AssistantHuntScraper()
         case "GitHub - GPTsSearch CSV Scrape":
             return GitHubGPTsSearchScraper()
+        case "meetgpts.com":
+            return MeetGPTsScraper()
         case _:
             raise ValueError(f"Unknown scraper name/Not implemented: {name}")
 
@@ -111,7 +114,7 @@ def main():
 
     if not args.use_json:
         title = 'Select scrapers to run: '
-        options = ['plugin.surf', "GitHub - GPTsSearch CSV Scrape", 'topgpts.ai', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", "assistanthunt.com", 'Twitter']
+        options = ['plugin.surf', "GitHub - GPTsSearch CSV Scrape", 'topgpts.ai', 'topgpts.ai-tiny', "allgpts.co", "botsbarn.com", "assistanthunt.com", 'Twitter', 'meetgpts.com']
         selected = pick(options, title, multiselect=True, min_selection_count=1)
         for i in range(len(selected)):
             selected[i] = selected[i][0]
