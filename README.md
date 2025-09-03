@@ -3,7 +3,6 @@
 A modular framework for **scraping GPTs** from publicly available GPT stores and other online sources.  
 This project was developed as part of a research project led by **PhD student Evin Jaff**, with contributions from collaborators including myself.
 
----
 
 ## 📌 Features
 - Multiple scrapers targeting different GPT directories (e.g., `allgpts.co`, `botsbarn.com`, `plugin.surf`, etc.).
